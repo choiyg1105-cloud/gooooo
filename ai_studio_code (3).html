@@ -1,0 +1,1718 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>깃허브 주소 입력표 · 인물 지도 현황판</title>
+  <style>
+    :root {
+      --white: #ffffff;
+      --ice-bg: #eef4fc;
+      --ice-bg-deep: #e4eefb;
+      --surface-soft: #f5f8fc;
+      --ink: #192231;
+      --muted: #657487;
+      --line: #e3ebf4;
+      --royal: #1d44b8;
+      --royal-dark: #153391;
+      --sky: #4a90f7;
+      --purple: #8e6ef3;
+      --teal: #118a96;
+      --peach-bg: #fceee9;
+      --coral: #e45750;
+      --mint-bg: #e7f7f4;
+      --mint-ink: #0c786c;
+      --shadow-sm: 0 6px 18px rgba(24, 54, 108, 0.06);
+      --shadow-md: 0 12px 28px rgba(24, 54, 108, 0.09);
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --maxw: 1180px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--ice-bg);
+      color: var(--ink);
+      font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Sticky Clean Top Navigation */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+    .navbar-inner {
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 12px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 1.08rem;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+    }
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--royal), var(--sky));
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 800;
+    }
+    .brand-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #e9f1fe;
+      color: var(--royal);
+    }
+
+    .nav-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .tab-btn {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.91rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .tab-btn:hover { background: var(--surface-soft); color: var(--ink); }
+    .tab-btn[aria-selected="true"] {
+      background: #eaf1fe;
+      color: var(--royal);
+    }
+
+    .nav-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    .mode-badge {
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: var(--mint-bg);
+      color: var(--mint-ink);
+    }
+    .mode-badge.local {
+      background: var(--peach-bg);
+      color: #b44722;
+    }
+    .btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--ink);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 0.83rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+    .btn:hover { background: var(--surface-soft); }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary {
+      border: none;
+      background: linear-gradient(135deg, var(--royal), var(--sky));
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(29, 68, 184, 0.22);
+    }
+    .btn-primary:hover { filter: brightness(1.05); }
+    .btn:focus-visible, .tab-btn:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 2px solid var(--sky);
+      outline-offset: 2px;
+    }
+
+    /* Upper White Band (Hero + Main Map + 4-Tile Bento) */
+    .upper-band {
+      background: var(--white);
+      border-bottom-left-radius: 36px;
+      border-bottom-right-radius: 36px;
+      box-shadow: 0 8px 24px rgba(24, 54, 108, 0.04);
+      padding: 28px 20px 36px;
+    }
+    .container {
+      max-width: var(--maxw);
+      margin: 0 auto;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Main Hero Bento Grid (Map Left + 4 Summary Tiles Right) */
+    .main-hero-grid {
+      display: grid;
+      grid-template-columns: 1.28fr 0.92fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* Left Main Visual Map Card */
+    .map-hero-card {
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .map-hero-banner {
+      background: linear-gradient(135deg, #1b3fa8 0%, #2457d6 65%, #3779ee 100%);
+      color: #ffffff;
+      padding: 22px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+    }
+    .banner-eyebrow {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      color: #dce9ff;
+      margin-bottom: 8px;
+    }
+    .map-hero-banner h1 {
+      margin: 0 0 6px;
+      font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+    }
+    .banner-lead {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #dce8ff;
+      max-width: 52ch;
+    }
+
+    .map-hero-body {
+      padding: 18px 20px 20px;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .map-stage {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .map-legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 4px; }
+    .legend-swatch {
+      width: 11px;
+      height: 11px;
+      border-radius: 3px;
+      border: 1px solid #d2dcea;
+      display: inline-block;
+    }
+    svg.korea-map {
+      width: 100%;
+      max-width: 310px;
+      height: auto;
+      display: block;
+    }
+    .map-region { cursor: pointer; outline: none; }
+    .map-region .region-shape {
+      stroke: #bac7d8;
+      stroke-width: 1.2;
+      stroke-linejoin: round;
+      transition: fill 0.18s ease, stroke 0.15s ease, stroke-width 0.15s ease;
+    }
+    .map-region:hover .region-shape,
+    .map-region:focus-visible .region-shape {
+      stroke: var(--royal-dark);
+      stroke-width: 2.2;
+    }
+    .map-region.selected .region-shape {
+      stroke: #0e2468;
+      stroke-width: 2.7;
+    }
+    .map-label {
+      font-size: 9.5px;
+      font-weight: 700;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+      fill: #243449;
+    }
+    .map-label.on-dark { fill: #ffffff; }
+    .map-subcount {
+      font-size: 8.5px;
+      font-weight: 700;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+      fill: #2f4562;
+    }
+    .map-subcount.on-dark { fill: #dce9ff; }
+
+    .map-side-bars h2 {
+      font-size: 0.98rem;
+      margin: 0 0 4px;
+    }
+    .map-side-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin: 0 0 12px;
+    }
+
+    .unplaced-row {
+      margin-top: 10px;
+      padding: 9px 12px;
+      border-radius: 12px;
+      background: var(--peach-bg);
+      border: 1px dashed #e7b5a4;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.79rem;
+      color: #a63d24;
+    }
+    .unplaced-btn {
+      appearance: none;
+      border: 1px solid #df8e77;
+      background: #fff;
+      color: #a63d24;
+      font-weight: 700;
+      font-size: 0.77rem;
+      padding: 5px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .unplaced-btn[aria-pressed="true"] {
+      background: var(--coral);
+      color: #fff;
+      border-color: var(--coral);
+    }
+
+    /* Right 4-Tile Bento (Saebit-style 2 vertical + 2 horizontal tiles) */
+    .right-bento {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .bento-intro {
+      font-size: 1.08rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0 0 2px;
+      color: var(--ink);
+    }
+    .bento-intro span { color: var(--royal); }
+    .bento-sub {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin: 0 0 4px;
+    }
+
+    .tiles-top {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .tile {
+      position: relative;
+      border: none;
+      text-align: left;
+      border-radius: 20px;
+      padding: 18px 18px 46px;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: var(--shadow-sm);
+      font-family: inherit;
+    }
+    .tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .tile-sky {
+      background: linear-gradient(155deg, #569bf8 0%, #3779eb 100%);
+      color: #ffffff;
+    }
+    .tile-purple {
+      background: linear-gradient(155deg, #9d80fa 0%, #7f5ceb 100%);
+      color: #ffffff;
+    }
+    .tile-ice {
+      background: #eaf2fd;
+      color: var(--ink);
+      padding: 16px 56px 16px 18px;
+    }
+    .tile-peach {
+      background: var(--peach-bg);
+      color: var(--ink);
+      padding: 16px 56px 16px 18px;
+    }
+
+    .tile-kicker {
+      font-size: 0.78rem;
+      font-weight: 700;
+      opacity: 0.9;
+      margin-bottom: 4px;
+    }
+    .tile-num {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.15;
+      margin-bottom: 4px;
+    }
+    .tile-desc {
+      font-size: 0.79rem;
+      opacity: 0.9;
+      margin: 0;
+    }
+    .tile-ice .tile-desc, .tile-peach .tile-desc { color: var(--muted); opacity: 1; }
+
+    .tile-arrow {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .tile-sky .tile-arrow { background: rgba(16, 46, 120, 0.45); }
+    .tile-purple .tile-arrow { background: rgba(65, 34, 145, 0.45); }
+    .tile-ice .tile-arrow { background: var(--teal); top: 50%; bottom: auto; transform: translateY(-50%); }
+    .tile-peach .tile-arrow { background: var(--coral); top: 50%; bottom: auto; transform: translateY(-50%); }
+
+    .criteria-strip {
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* Lower Soft Sky-Blue Band (Showcase Cards / Detail Area) */
+    .lower-band {
+      padding: 32px 20px 64px;
+    }
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+    .section-title span { color: var(--royal); }
+    .section-sub {
+      font-size: 0.86rem;
+      color: var(--muted);
+      margin: 4px 0 0;
+    }
+
+    /* 4-column Respondent Showcase Cards (Saebit bottom card style) */
+    .people-cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .person-card {
+      appearance: none;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      text-align: left;
+      background: var(--white);
+      border-radius: 18px;
+      padding: 16px 18px;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+      font-family: inherit;
+    }
+    .person-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+      border-color: #bdd4f8;
+    }
+    .person-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .person-name {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--ink);
+    }
+    .status-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: #e9f1fe;
+      color: var(--royal);
+      white-space: nowrap;
+    }
+    .status-pill.warn {
+      background: var(--peach-bg);
+      color: #c23f35;
+    }
+    .person-hobby {
+      font-size: 0.83rem;
+      color: var(--muted);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 2.5em;
+    }
+    .person-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.77rem;
+      color: var(--muted);
+      padding-top: 8px;
+      border-top: 1px solid var(--line);
+    }
+    .person-foot strong { color: var(--royal); }
+
+    /* Secondary Tabs Layout (in upper-band / lower-band cleanly) */
+    .split {
+      display: grid;
+      grid-template-columns: 1.15fr 0.95fr;
+      gap: 18px;
+      align-items: start;
+    }
+    .box {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: var(--shadow-sm);
+    }
+    .box h2 { font-size: 1.1rem; margin: 0 0 6px; }
+    .box-desc { font-size: 0.86rem; color: var(--muted); margin: 0 0 16px; }
+
+    /* Clean Bar List */
+    .bar-list { display: flex; flex-direction: column; gap: 8px; }
+    .bar-item {
+      width: 100%;
+      text-align: left;
+      appearance: none;
+      border: 1px solid var(--line);
+      background: var(--white);
+      border-radius: 12px;
+      padding: 9px 12px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .bar-item:hover { background: #f8fbff; border-color: #c6d8f6; }
+    .bar-item[aria-pressed="true"] {
+      border-color: var(--royal);
+      background: #eff5ff;
+    }
+    .bar-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+    .bar-count {
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .bar-track {
+      width: 100%;
+      height: 8px;
+      background: #eaf0f8;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--royal), var(--sky));
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+
+    .name-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .name-chip {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: var(--surface-soft);
+      color: var(--ink);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .name-chip:hover {
+      border-color: var(--royal);
+      background: #eaf1fe;
+      color: var(--royal);
+    }
+
+    .notice {
+      margin-top: 14px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      font-size: 0.82rem;
+      background: var(--peach-bg);
+      color: #a13a21;
+      border: 1px solid #f2cec2;
+    }
+    .notice-muted {
+      background: var(--surface-soft);
+      color: var(--muted);
+      border-color: var(--line);
+    }
+
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .input, .select {
+      border: 1px solid var(--line);
+      background: var(--surface-soft);
+      color: var(--ink);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 0.87rem;
+      font-family: inherit;
+    }
+    .input { flex: 1 1 180px; }
+
+    .roster-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 450px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .roster-btn {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      text-align: left;
+      border: 1px solid var(--line);
+      background: var(--white);
+      border-radius: 12px;
+      padding: 10px 13px;
+      cursor: pointer;
+    }
+    .roster-btn:hover { background: var(--surface-soft); }
+    .roster-btn[aria-pressed="true"] {
+      border-color: var(--royal);
+      background: #edf4ff;
+    }
+    .roster-sub { font-size: 0.78rem; color: var(--muted); }
+
+    dl.profile-dl {
+      margin: 0;
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 11px 14px;
+      font-size: 0.9rem;
+    }
+    dl.profile-dl dt { color: var(--muted); font-weight: 700; }
+    dl.profile-dl dd { margin: 0; word-break: break-word; }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.74rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      color: var(--muted);
+      border: 1px solid var(--line);
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+    .tag-warn {
+      background: var(--peach-bg);
+      color: #b83a30;
+      border-color: #f3c4bd;
+    }
+    a.ext-link {
+      color: var(--royal);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      font-weight: 700;
+    }
+
+    table.audit-table { width: 100%; border-collapse: collapse; font-size: 0.89rem; }
+    table.audit-table th, table.audit-table td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+    }
+    table.audit-table th { color: var(--muted); font-weight: 700; font-size: 0.8rem; }
+    .num { font-variant-numeric: tabular-nums; }
+
+    @media (max-width: 1000px) {
+      .main-hero-grid { grid-template-columns: 1fr; }
+      .people-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      .map-hero-body, .split, .tiles-top { grid-template-columns: 1fr; }
+      .people-cards { grid-template-columns: 1fr; }
+      dl.profile-dl { grid-template-columns: 1fr; gap: 4px; }
+      dl.profile-dl dd { margin-bottom: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 상단 네비게이션 -->
+  <header class="navbar">
+    <div class="navbar-inner">
+      <button class="brand" type="button" id="brandHomeBtn">
+        <span class="brand-mark">G</span>
+        <span>깃허브 입력표</span>
+        <span class="brand-pill">인물지도</span>
+      </button>
+
+      <nav class="nav-tabs" role="tablist" aria-label="데이터 시각화 메뉴">
+        <button class="tab-btn" role="tab" id="tab-map" aria-controls="panel-map" aria-selected="true" data-tab="map">인물 지도</button>
+        <button class="tab-btn" role="tab" id="tab-submission" aria-controls="panel-submission" aria-selected="false" data-tab="submission">제출 현황</button>
+        <button class="tab-btn" role="tab" id="tab-hobby" aria-controls="panel-hobby" aria-selected="false" data-tab="hobby">취미</button>
+        <button class="tab-btn" role="tab" id="tab-profile" aria-controls="panel-profile" aria-selected="false" data-tab="profile">이름별 프로필</button>
+        <button class="tab-btn" role="tab" id="tab-audit" aria-controls="panel-audit" aria-selected="false" data-tab="audit">입력 확인</button>
+      </nav>
+
+      <div class="nav-actions">
+        <span id="modeBadge" class="mode-badge">공개 안전 모드</span>
+        <input id="csvFileInput" type="file" accept=".csv,text/csv" hidden />
+        <button id="openCsvBtn" class="btn btn-primary" type="button">CSV 열기</button>
+        <button id="resetCsvBtn" class="btn" type="button" hidden>기본 데이터</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 상단 화이트 섹션 -->
+  <main>
+    <div class="upper-band">
+      <div class="container">
+        <!-- 1. 메인 패널: 데이터 시각화 인물 지도 -->
+        <section id="panel-map" class="panel active" role="tabpanel" aria-labelledby="tab-map">
+          <div class="main-hero-grid">
+            <!-- 좌측: 메인 인물 지도 카드 -->
+            <div class="map-hero-card">
+              <div class="map-hero-banner">
+                <div>
+                  <span class="banner-eyebrow">MAIN VISUALIZATION · 시·도별 거주 인물 지도</span>
+                  <h1>어디에 많이 거주하고 있을까요?</h1>
+                  <p id="heroLead" class="banner-lead"></p>
+                </div>
+              </div>
+
+              <div class="map-hero-body">
+                <div class="map-stage">
+                  <div class="map-legend" aria-label="거주 인원 색상 범례">
+                    <span class="legend-item"><span class="legend-swatch" style="background:#edf2f8"></span>0명</span>
+                    <span class="legend-item"><span class="legend-swatch" style="background:#b9d7fc"></span>1~2명</span>
+                    <span class="legend-item"><span class="legend-swatch" style="background:#4a90f7"></span>3~5명</span>
+                    <span class="legend-item"><span class="legend-swatch" style="background:#1d44b8"></span>6명+</span>
+                  </div>
+                  <svg id="koreaMapSvg" class="korea-map" viewBox="0 0 400 500" role="img" aria-label="대한민국 시·도별 거주 인원 지도"></svg>
+                </div>
+
+                <div class="map-side-bars">
+                  <h2>시·도별 분포 비교</h2>
+                  <p class="map-side-desc">지도나 지역 막대를 누르면 아래 인물 카드 목록이 해당 지역으로 바뀝니다.</p>
+                  <div id="regionBars" class="bar-list"></div>
+                  <div id="unplacedRegionRow" class="unplaced-row" hidden></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 우측: 핵심 요약 4타일 + 집계 기준 -->
+            <div class="right-bento">
+              <div>
+                <p class="bento-intro"><span>깃허브 주소 입력표</span> 한눈에 보기</p>
+                <p class="bento-sub">각 카드를 누르면 세부 분석 탭으로 바로 이동합니다.</p>
+              </div>
+
+              <div class="tiles-top">
+                <button type="button" class="tile tile-sky" id="tileTotal">
+                  <div class="tile-kicker">전체 유효 응답</div>
+                  <div id="statTotal" class="tile-num">-</div>
+                  <p class="tile-desc">‘이름’이 입력된 응답 행</p>
+                  <span class="tile-arrow" aria-hidden="true">↗</span>
+                </button>
+                <button type="button" class="tile tile-purple" id="tileGithub">
+                  <div class="tile-kicker">GitHub 주소 입력</div>
+                  <div id="statGithub" class="tile-num">-</div>
+                  <p id="statGithubNote" class="tile-desc">-</p>
+                  <span class="tile-arrow" aria-hidden="true">↗</span>
+                </button>
+              </div>
+
+              <button type="button" class="tile tile-ice" id="tilePages">
+                <div class="tile-kicker">제출 페이지 (GitHub Pages) 입력</div>
+                <div id="statPages" class="tile-num">-</div>
+                <p id="statPagesNote" class="tile-desc">-</p>
+                <span class="tile-arrow" aria-hidden="true">↗</span>
+              </button>
+
+              <button type="button" class="tile tile-peach" id="tileMetro">
+                <div class="tile-kicker">수도권(경기·서울) 거주 집중도</div>
+                <div id="statMetro" class="tile-num">-</div>
+                <p id="statMetroNote" class="tile-desc">-</p>
+                <span class="tile-arrow" aria-hidden="true">↗</span>
+              </button>
+
+              <div id="criteriaSummary" class="criteria-strip"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. 제출 현황 패널 -->
+        <section id="panel-submission" class="panel" role="tabpanel" aria-labelledby="tab-submission">
+          <div class="split">
+            <div class="box">
+              <h2>GitHub · 제출 페이지 입력 조합</h2>
+              <p class="box-desc">막대 항목을 누르거나 키보드로 선택하면 오른쪽에서 해당 응답자 명단을 확인할 수 있습니다.</p>
+              <div id="submissionBars" class="bar-list"></div>
+              <div class="notice">
+                입력 여부는 <strong>칸이 비어 있지 않은지</strong>만 집계합니다. 링크의 실제 HTTP 접속·정상 작동·과제 완료 여부는 확인하지 않았습니다.
+              </div>
+            </div>
+            <div class="box">
+              <h2 id="submissionDetailTitle">선택한 분류 명단</h2>
+              <p id="submissionDetailDesc" class="box-desc"></p>
+              <div id="submissionDetailList" class="name-chips"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. 취미 패널 -->
+        <section id="panel-hobby" class="panel" role="tabpanel" aria-labelledby="tab-hobby">
+          <div class="split">
+            <div class="box">
+              <h2>취미 분포 (원문 표기 유지)</h2>
+              <p class="box-desc">쉼표(,) 기준으로 나누고 1인당 중복은 1회만 계산했습니다. 비슷한 표현을 임의로 합치지 않았습니다.</p>
+              <div class="controls">
+                <input id="hobbySearch" class="input" type="search" placeholder="취미 검색 (예: 기타, 음악, 게임)" aria-label="취미 검색" />
+                <button id="hobbyTopToggle" class="btn" type="button" aria-pressed="false">전체 보기</button>
+              </div>
+              <div id="hobbyBars" class="bar-list"></div>
+            </div>
+            <div class="box">
+              <h2 id="hobbyDetailTitle">선택한 취미 입력자</h2>
+              <p id="hobbyDetailDesc" class="box-desc"></p>
+              <div id="hobbyDetailList" class="name-chips"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. 이름별 프로필 패널 -->
+        <section id="panel-profile" class="panel" role="tabpanel" aria-labelledby="tab-profile">
+          <div class="split">
+            <div class="box">
+              <h2>응답자 명단 검색 및 필터</h2>
+              <p class="box-desc">이름을 선택하면 상세 입력 내역을 확인합니다.</p>
+              <div class="controls">
+                <input id="profileSearch" class="input" type="search" placeholder="이름 검색" aria-label="이름 검색" />
+                <select id="profileStatusFilter" class="select" aria-label="제출 현황 필터">
+                  <option value="ALL">제출 현황: 전체</option>
+                  <option value="둘 다 입력">둘 다 입력</option>
+                  <option value="GitHub만 입력">GitHub만 입력</option>
+                  <option value="제출 페이지만 입력">제출 페이지만 입력</option>
+                  <option value="둘 다 미입력">둘 다 미입력</option>
+                </select>
+                <select id="profileRegionFilter" class="select" aria-label="거주 지역 필터">
+                  <option value="ALL">거주 지역: 전체</option>
+                </select>
+              </div>
+              <div id="rosterList" class="roster-list"></div>
+            </div>
+            <div class="box">
+              <h2 id="profileDetailName">프로필 상세</h2>
+              <p id="profileDetailSub" class="box-desc"></p>
+              <div id="profileDetailBody"></div>
+              <div id="profilePrivacyNotice" class="notice notice-muted"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. 입력 확인 패널 -->
+        <section id="panel-audit" class="panel" role="tabpanel" aria-labelledby="tab-audit">
+          <div class="split">
+            <div class="box">
+              <h2>주요 항목별 누락 건수</h2>
+              <p class="box-desc">원본 값을 임의로 고치거나 빈 칸을 추정해 채우지 않고, 있는 그대로 집계했습니다.</p>
+              <table class="audit-table">
+                <thead>
+                  <tr>
+                    <th>항목(열)</th>
+                    <th>입력됨</th>
+                    <th>누락(빈 칸)</th>
+                    <th>비고</th>
+                  </tr>
+                </thead>
+                <tbody id="auditTableBody"></tbody>
+              </table>
+            </div>
+            <div class="box">
+              <h2>집계 제외 행 및 비일관 컬럼 안내</h2>
+              <div id="auditNotes"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- 하단 스카이블루 섹션: 메인 인물 지도와 연동되는 선택 지역 인물 카드 쇼케이스 -->
+    <section id="lowerShowcase" class="lower-band" aria-label="선택한 지역 인물 카드">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2 id="regionDetailTitle" class="section-title">선택한 지역의 <span>인물 카드</span></h2>
+            <p id="regionDetailDesc" class="section-sub"></p>
+          </div>
+          <button type="button" class="btn" id="showAllProfilesBtn">전체 명단 보기</button>
+        </div>
+        <div id="regionPeopleCards" class="people-cards"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const PUBLIC_EMBEDDED_DATA = {
+      meta: {
+        preHeaderRows: 1,
+        blankRows: 11,
+        missingNameRows: 0,
+        sourceLabel: "공개 안전 모드"
+      },
+      records: [
+        { name: "박종석", github: "https://github.com/John02-design", pages: "https://john02-design.github.io/1234/", instagram: "I_am_jongseok", hobby: "일렉기타, 영화감상", regionProvince: "경기도", addressRaw: null, favorite: null, genderPresent: false },
+        { name: "박준영", github: "https://github.com/alex60796-bot", pages: "https://alex60796-bot.github.io/dkssudgktpdy/", instagram: "jxn.y0xn9", hobby: "피파", regionProvince: "경기도", addressRaw: null, favorite: null, genderPresent: true },
+        { name: "강민서", github: "https://github.com/rlverms", pages: "https://rlverms.github.io/rlverms/", instagram: "rlverms", hobby: "쿠리만쥬 인형 구매, 영화 시청, 음악 감상", regionProvince: "서울특별시", addressRaw: null, favorite: null, genderPresent: true },
+        { name: "박정빈", github: "https://github.com/ImSAKUYAmyfriendisRYO", pages: "https://imsakuyamyfriendisryo.github.io/-/", instagram: "@upfstpu.2", hobby: "노래듣기", regionProvince: "분류 확인 필요", addressRaw: null, favorite: null, genderPresent: true },
+        { name: "김나림", github: "github.com/nalimgim947", pages: "", instagram: "@thisisimrimthis", hobby: "그림, 음악, 운동, 애니", regionProvince: "경기도", addressRaw: null, favorite: null, genderPresent: true },
+        { name: "김보라", github: "https://github.com/KIMBORA050411", pages: "https://kimbora050411.github.io/050411/", instagram: "@b0.ra.4", hobby: "공포 보기", regionProvince: "경기도", addressRaw: null, favorite: null, genderPresent: true },
+        { name: "김승기", github: "https://github.com/Seung7l", pages: "https://seung7l.github.io/DoSiMoonWhaSulGye/", instagram: "@_seung7l", hobby: "네줄기타", regionProvince: "경기도", addressRaw: null, favorite: null, genderPresent: true },
+        { name: "문민희", github: "https://github.com/massiag41-art", pages: "https://massiag41-art.github.io/1233/", instagram: "@mini3061", hobby: "게임", regionProvince: "경기도", addressRaw: null, favorite: null, genderPresent: true },
+        { name: "민제희", github: "https://github.com/alfmekfn5", pages: "https://alfmekfn5.github.io/555/", instagram: "@mirdar.u_", hobby: "게임, 운동, 기깔나게 자기", regionProvince: "강원도", addressRaw: null, favorite: null, genderPresent: true },
+        { name: "윤수아", github: "https://github.com/tndk0512-ux", pages: "https://tndk0512-ux.github.io/index/", instagram: "tnd_0_5", hobby: "기타,애니,음악듣기", regionProvince: "서울특별시", addressRaw: null, favorite: null, genderPresent: true },
+        { name: "이지민", github: "https://github.com/leejimin0", pages: "https://leejimin0.github.io/ezym/", instagram: "@tonmozza", hobby: "독서", regionProvince: "경기도", addressRaw: null, favorite: null, genderPresent: true },
+        { name: "정유림", github: "https://github.com/yourrime0502-afk", pages: "https://yourrime0502-afk.github.io/kdu1/", instagram: "https://www.instagram.com/nollimmm?mdxt=MWNnNHBwZm5kNWI4NQ==", hobby: "콘서트 관람", regionProvince: "분류 확인 필요", addressRaw: null, favorite: null, genderPresent: true },
+        { name: "최윤영", github: "https://github.com/usagi030dd", pages: "https://usagi030dd.github.io/samples/ 입니다.", instagram: "@usagi030dd", hobby: "음악 감상 및 연주(통기타&일렉)", regionProvince: "서울특별시", addressRaw: null, favorite: null, genderPresent: true },
+        { name: "최윤지", github: "https://github.com/choiyg1105-cloud", pages: "https://choiyg1105-cloud.github.io/save/", instagram: "yum._.crochet", hobby: "우쿨렐레, 뜨개질", regionProvince: "경기도", addressRaw: null, favorite: null, genderPresent: true },
+        { name: "신단하", github: "https://github.com/danhaaaa", pages: "https://danhaaaa.github.io/sakuya/", instagram: "@danha_naa", hobby: "위시 사랑하기", regionProvince: "경기도", addressRaw: null, favorite: null, genderPresent: true }
+      ]
+    };
+
+    const PROVINCE_PREFIXES = [
+      "서울특별시", "부산광역시", "대구광역시", "인천광역시", "광주광역시", "대전광역시", "울산광역시", "세종특별자치시",
+      "경기도", "강원도", "강원특별자치도", "충청북도", "충청남도", "전라북도", "전북특별자치도", "전라남도",
+      "경상북도", "경상남도", "제주특별자치도"
+    ];
+
+    const KOREA_MAP_REGIONS = [
+      { id: "강원", fullName: "강원도", aliases: ["강원도", "강원특별자치도"], points: "148,54 240,18 286,95 322,152 292,168 224,158 180,152 170,96", lx: 232, ly: 96 },
+      { id: "경기", fullName: "경기도", aliases: ["경기도"], points: "92,66 148,54 170,96 180,152 162,172 136,180 102,172 86,152 84,126 76,102", lx: 126, ly: 152 },
+      { id: "인천", fullName: "인천광역시", aliases: ["인천광역시"], points: "54,98 78,96 86,128 62,134 50,118", lx: 68, ly: 114 },
+      { id: "서울", fullName: "서울특별시", aliases: ["서울특별시"], points: "102,106 134,104 140,124 128,132 104,130 98,118", lx: 119, ly: 117 },
+      { id: "충남", fullName: "충청남도", aliases: ["충청남도"], points: "92,172 136,180 144,202 164,238 156,262 88,266 68,228 46,192", lx: 95, ly: 222 },
+      { id: "충북", fullName: "충청북도", aliases: ["충청북도"], points: "152,172 180,152 224,158 246,190 214,220 194,258 182,262 164,238 144,202", lx: 192, ly: 198 },
+      { id: "세종", fullName: "세종특별자치시", aliases: ["세종특별자치시"], points: "128,196 146,196 150,218 130,218", lx: 139, ly: 207 },
+      { id: "대전", fullName: "대전광역시", aliases: ["대전광역시"], points: "138,224 162,224 164,246 140,246", lx: 151, ly: 235 },
+      { id: "경북", fullName: "경상북도", aliases: ["경상북도"], points: "224,158 292,168 324,174 338,266 328,300 274,304 196,284 186,262 214,220 246,190", lx: 266, ly: 222 },
+      { id: "대구", fullName: "대구광역시", aliases: ["대구광역시"], points: "238,262 270,262 272,288 238,288", lx: 255, ly: 275 },
+      { id: "전북", fullName: "전라북도", aliases: ["전라북도", "전북특별자치도"], points: "88,266 156,262 186,262 170,324 112,328 68,324 76,294", lx: 124, ly: 294 },
+      { id: "전남", fullName: "전라남도", aliases: ["전라남도"], points: "68,324 112,328 170,324 184,344 184,392 138,420 68,428 50,380", lx: 122, ly: 388 },
+      { id: "광주", fullName: "광주광역시", aliases: ["광주광역시"], points: "92,336 126,336 128,360 92,360", lx: 110, ly: 348 },
+      { id: "경남", fullName: "경상남도", aliases: ["경상남도"], points: "186,262 196,284 274,304 300,304 298,334 282,354 238,382 184,392 184,344 170,324", lx: 232, ly: 336 },
+      { id: "울산", fullName: "울산광역시", aliases: ["울산광역시"], points: "298,298 330,298 328,328 298,328", lx: 314, ly: 313 },
+      { id: "부산", fullName: "부산광역시", aliases: ["부산광역시"], points: "282,336 318,336 314,364 278,364", lx: 298, ly: 350 },
+      { id: "제주", fullName: "제주특별자치도", aliases: ["제주특별자치도"], points: "68,452 128,448 136,466 116,478 66,474 58,462", lx: 98, ly: 463 }
+    ];
+
+    const state = {
+      isLocalCsv: false,
+      meta: PUBLIC_EMBEDDED_DATA.meta,
+      records: PUBLIC_EMBEDDED_DATA.records,
+      activeTab: "map",
+      selectedSubmission: "둘 다 입력",
+      selectedRegion: null,
+      selectedHobby: null,
+      hobbyShowAll: false,
+      selectedProfileIndex: 0
+    };
+
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function isValidHttpUrl(value) {
+      const trimmed = String(value || "").trim();
+      if (!trimmed || /\s/.test(trimmed)) return false;
+      if (!/^https?:\/\//i.test(trimmed)) return false;
+      try {
+        const u = new URL(trimmed);
+        return (u.protocol === "http:" || u.protocol === "https:") && Boolean(u.hostname) && u.hostname.includes(".");
+      } catch {
+        return false;
+      }
+    }
+
+    function classifyProvince(rawAddress) {
+      const trimmed = String(rawAddress || "").trim();
+      if (!trimmed) return "미입력";
+      const first = trimmed.split(/\s+/)[0];
+      const matched = PROVINCE_PREFIXES.find(p => first === p || trimmed.startsWith(p + " "));
+      return matched || "분류 확인 필요";
+    }
+
+    function getSubmissionCategory(rec) {
+      const hasGh = Boolean(String(rec.github || "").trim());
+      const hasPg = Boolean(String(rec.pages || "").trim());
+      if (hasGh && hasPg) return "둘 다 입력";
+      if (hasGh && !hasPg) return "GitHub만 입력";
+      if (!hasGh && hasPg) return "제출 페이지만 입력";
+      return "둘 다 미입력";
+    }
+
+    function extractHobbies(hobbyStr) {
+      const raw = String(hobbyStr || "").trim();
+      if (!raw) return [];
+      const seen = new Set();
+      const result = [];
+      for (const part of raw.split(",")) {
+        const item = part.trim();
+        if (item && !seen.has(item)) {
+          seen.add(item);
+          result.push(item);
+        }
+      }
+      return result;
+    }
+
+    function parseCsvRows(text) {
+      const clean = text.replace(/^\uFEFF/, "");
+      const rows = [];
+      let row = [];
+      let field = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < clean.length; i++) {
+        const ch = clean[i];
+        const next = clean[i + 1];
+        if (inQuotes) {
+          if (ch === '"' && next === '"') { field += '"'; i++; }
+          else if (ch === '"') { inQuotes = false; }
+          else { field += ch; }
+        } else {
+          if (ch === '"') { inQuotes = true; }
+          else if (ch === ",") { row.push(field); field = ""; }
+          else if (ch === "\r" && next === "\n") { row.push(field); rows.push(row); row = []; field = ""; i++; }
+          else if (ch === "\n" || ch === "\r") { row.push(field); rows.push(row); row = []; field = ""; }
+          else { field += ch; }
+        }
+      }
+      if (field.length > 0 || row.length > 0) {
+        row.push(field);
+        rows.push(row);
+      }
+      return rows;
+    }
+
+    function parseUploadedCsv(text, filename) {
+      const rows = parseCsvRows(text);
+      const isBlankRow = r => r.every(cell => String(cell || "").trim() === "");
+
+      const headerIdx = rows.findIndex(r => {
+        const c0 = String(r[0] || "").trim();
+        return c0 === "이름" || r.some(c => String(c || "").includes("GitHub 주소"));
+      });
+
+      if (headerIdx === -1) {
+        throw new Error("‘이름’ 헤더 행을 찾을 수 없습니다. 첨부된 입력표 형식의 CSV인지 확인해 주세요.");
+      }
+
+      const header = rows[headerIdx].map(c => String(c || "").trim());
+      const findCol = (keywords, fallback) => {
+        const idx = header.findIndex(h => keywords.some(k => h.includes(k)));
+        return idx !== -1 ? idx : fallback;
+      };
+
+      const colName = findCol(["이름"], 0);
+      const colGithub = findCol(["GitHub"], 1);
+      const colPages = findCol(["제출 페이지", "Pages"], 2);
+      const colInsta = findCol(["인스타"], 3);
+      const colHobby = findCol(["취미"], 4);
+      const colAddr = findCol(["집주소", "주소", "거주"], 5);
+      const colFav = findCol(["아끼는"], 6);
+      const colGender = findCol(["성별"], 7);
+
+      let preHeaderRows = 0, blankRows = 0, missingNameRows = 0;
+      for (let i = 0; i < headerIdx; i++) {
+        if (isBlankRow(rows[i])) blankRows++;
+        else preHeaderRows++;
+      }
+
+      const records = [];
+      for (let i = headerIdx + 1; i < rows.length; i++) {
+        const r = rows[i];
+        if (isBlankRow(r)) { blankRows++; continue; }
+        const name = String(r[colName] || "").trim();
+        if (!name) { missingNameRows++; continue; }
+        const addrRaw = String(r[colAddr] || "").trim();
+        records.push({
+          name,
+          github: String(r[colGithub] || "").trim(),
+          pages: String(r[colPages] || "").trim(),
+          instagram: String(r[colInsta] || "").trim(),
+          hobby: String(r[colHobby] || "").trim(),
+          regionProvince: classifyProvince(addrRaw),
+          addressRaw: addrRaw,
+          favorite: String(r[colFav] || "").trim(),
+          genderPresent: Boolean(String(r[colGender] || "").trim())
+        });
+      }
+
+      return {
+        meta: {
+          preHeaderRows,
+          blankRows,
+          missingNameRows,
+          sourceLabel: `로컬 CSV · ${filename}`
+        },
+        records
+      };
+    }
+
+    function openPersonProfile(name) {
+      const idx = state.records.findIndex(r => r.name === name);
+      if (idx !== -1) {
+        state.selectedProfileIndex = idx;
+        document.getElementById("profileSearch").value = "";
+        document.getElementById("profileStatusFilter").value = "ALL";
+        document.getElementById("profileRegionFilter").value = "ALL";
+        activateTab("profile");
+        renderProfile();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+    function renderAll() {
+      const records = state.records;
+      const total = records.length;
+      const ghCount = records.filter(r => String(r.github || "").trim() !== "").length;
+      const pgCount = records.filter(r => String(r.pages || "").trim() !== "").length;
+      const ghInvalidUrl = records.filter(r => String(r.github || "").trim() !== "" && !isValidHttpUrl(r.github)).length;
+      const pgInvalidUrl = records.filter(r => String(r.pages || "").trim() !== "" && !isValidHttpUrl(r.pages)).length;
+      const metroCount = records.filter(r => ["경기도", "서울특별시", "인천광역시"].includes(r.regionProvince)).length;
+
+      const badge = document.getElementById("modeBadge");
+      badge.textContent = state.meta.sourceLabel;
+      badge.classList.toggle("local", state.isLocalCsv);
+      document.getElementById("resetCsvBtn").hidden = !state.isLocalCsv;
+
+      document.getElementById("heroLead").textContent =
+        `전체 ${total}명 중 수도권(경기·서울·인천)에 ${metroCount}명이 거주하며, ` +
+        `GitHub 주소는 ${ghCount}명, 제출 페이지 주소는 ${pgCount}명이 입력했습니다. 지역을 눌러 인물을 탐색하세요.`;
+
+      document.getElementById("statTotal").textContent = `${total}명`;
+      document.getElementById("statGithub").textContent = `${ghCount}명`;
+      document.getElementById("statGithubNote").textContent =
+        `${total ? ((ghCount / total) * 100).toFixed(1) : "0.0"}%` +
+        (ghInvalidUrl ? ` (형식 확인 ${ghInvalidUrl}건)` : "");
+
+      document.getElementById("statPages").textContent = `${pgCount}명`;
+      document.getElementById("statPagesNote").textContent =
+        `전체 대비 ${total ? ((pgCount / total) * 100).toFixed(1) : "0.0"}%` +
+        (pgInvalidUrl ? ` · URL 형식 확인 필요 ${pgInvalidUrl}건 포함` : "");
+
+      document.getElementById("statMetro").textContent = `${metroCount}명 (${total ? ((metroCount / total) * 100).toFixed(1) : "0.0"}%)`;
+      document.getElementById("statMetroNote").textContent =
+        `경기도 ${records.filter(r => r.regionProvince === "경기도").length}명 · 서울특별시 ${records.filter(r => r.regionProvince === "서울특별시").length}명`;
+
+      document.getElementById("criteriaSummary").textContent =
+        `집계 기준: 헤더 이후 ‘이름’이 비어 있지 않은 ${total}개 행 집계 ` +
+        `(헤더 이전 안내 ${state.meta.preHeaderRows}행 · 빈/공백 ${state.meta.blankRows}행 · 이름 누락 ${state.meta.missingNameRows}행 제외). ` +
+        `세부 동·구는 비노출이며 실제 링크 작동 여부는 확인하지 않았습니다.`;
+
+      renderRegion();
+      renderSubmission();
+      renderHobby();
+      renderProfileFilters();
+      renderProfile();
+      renderAudit();
+    }
+
+    function renderBars(container, items, totalBase, selectedKey, onSelect) {
+      container.innerHTML = "";
+      if (!items.length) {
+        container.innerHTML = `<p class="box-desc">표시할 항목이 없습니다.</p>`;
+        return;
+      }
+      const maxCount = Math.max(...items.map(it => it.count), 1);
+      for (const item of items) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "bar-item";
+        btn.setAttribute("aria-pressed", String(item.key === selectedKey));
+        const pct = totalBase ? ((item.count / totalBase) * 100).toFixed(1) : "0.0";
+        const widthPct = Math.max((item.count / maxCount) * 100, item.count > 0 ? 4 : 0);
+        btn.innerHTML = `
+          <div class="bar-meta">
+            <span>${escapeHtml(item.key)}</span>
+            <span class="bar-count">${item.count}명 (${pct}%)</span>
+          </div>
+          <div class="bar-track" aria-hidden="true">
+            <div class="bar-fill" style="width: ${widthPct}%"></div>
+          </div>
+        `;
+        btn.addEventListener("click", () => onSelect(item.key));
+        container.appendChild(btn);
+      }
+    }
+
+    function renderNameChips(container, names) {
+      container.innerHTML = "";
+      if (!names.length) {
+        container.innerHTML = `<p class="box-desc">해당하는 응답자가 없습니다.</p>`;
+        return;
+      }
+      for (const name of names) {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "name-chip";
+        chip.textContent = name;
+        chip.addEventListener("click", () => openPersonProfile(name));
+        container.appendChild(chip);
+      }
+    }
+
+    function getMapFillColor(count) {
+      if (count >= 6) return "#1d44b8";
+      if (count >= 3) return "#4a90f7";
+      if (count >= 1) return "#b9d7fc";
+      return "#edf2f8";
+    }
+
+    function renderKoreaMap(groups) {
+      const svg = document.getElementById("koreaMapSvg");
+      svg.innerHTML = "";
+      const ns = "http://www.w3.org/2000/svg";
+
+      for (const reg of KOREA_MAP_REGIONS) {
+        const matchedAliases = reg.aliases.filter(a => groups.has(a));
+        const names = matchedAliases.flatMap(a => groups.get(a));
+        const count = names.length;
+        const activeKey = matchedAliases[0] || reg.fullName;
+        const isSelected = reg.aliases.includes(state.selectedRegion) || state.selectedRegion === reg.fullName;
+
+        const g = document.createElementNS(ns, "g");
+        g.setAttribute("class", `map-region${isSelected ? " selected" : ""}`);
+        g.setAttribute("role", "button");
+        g.setAttribute("tabindex", "0");
+        g.setAttribute("aria-pressed", String(isSelected));
+        g.setAttribute("aria-label", `${reg.fullName} ${count}명`);
+
+        const titleEl = document.createElementNS(ns, "title");
+        titleEl.textContent = `${reg.fullName}: ${count}명`;
+        g.appendChild(titleEl);
+
+        const poly = document.createElementNS(ns, "polygon");
+        poly.setAttribute("class", "region-shape");
+        poly.setAttribute("points", reg.points);
+        poly.setAttribute("fill", getMapFillColor(count));
+        g.appendChild(poly);
+
+        const isDark = count >= 3;
+        const label = document.createElementNS(ns, "text");
+        label.setAttribute("class", `map-label${isDark ? " on-dark" : ""}`);
+        label.setAttribute("x", String(reg.lx));
+        label.setAttribute("y", String(count > 0 ? reg.ly - 5 : reg.ly));
+        label.textContent = reg.id;
+        g.appendChild(label);
+
+        if (count > 0) {
+          const sub = document.createElementNS(ns, "text");
+          sub.setAttribute("class", `map-subcount${isDark ? " on-dark" : ""}`);
+          sub.setAttribute("x", String(reg.lx));
+          sub.setAttribute("y", String(reg.ly + 6));
+          sub.textContent = `${count}명`;
+          g.appendChild(sub);
+        }
+
+        const selectThis = () => {
+          state.selectedRegion = activeKey;
+          renderRegion();
+        };
+        g.addEventListener("click", selectThis);
+        g.addEventListener("keydown", e => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            selectThis();
+          }
+        });
+
+        svg.appendChild(g);
+      }
+
+      const unplacedRow = document.getElementById("unplacedRegionRow");
+      const unplacedNames = groups.get("분류 확인 필요") || [];
+      if (unplacedNames.length > 0) {
+        unplacedRow.hidden = false;
+        const isSel = state.selectedRegion === "분류 확인 필요";
+        unplacedRow.innerHTML = `
+          <span>시·도 미기재 (지도 미배치)</span>
+          <button type="button" class="unplaced-btn" aria-pressed="${isSel}">
+            분류 확인 필요 ${unplacedNames.length}명
+          </button>
+        `;
+        unplacedRow.querySelector("button").addEventListener("click", () => {
+          state.selectedRegion = "분류 확인 필요";
+          renderRegion();
+        });
+      } else {
+        unplacedRow.hidden = true;
+      }
+    }
+
+    function renderRegion() {
+      const groups = new Map();
+      for (const rec of state.records) {
+        const key = rec.regionProvince || "미입력";
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(rec);
+      }
+      const items = [...groups.entries()]
+        .map(([key, recs]) => ({ key, count: recs.length, recs }))
+        .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key, "ko"));
+
+      if (!state.selectedRegion) {
+        state.selectedRegion = items[0]?.key || null;
+      }
+
+      renderKoreaMap(groups);
+      renderBars(
+        document.getElementById("regionBars"),
+        items,
+        state.records.length,
+        state.selectedRegion,
+        key => { state.selectedRegion = key; renderRegion(); }
+      );
+
+      const selectedRecs = groups.get(state.selectedRegion) || [];
+      document.getElementById("regionDetailTitle").innerHTML =
+        `<span>‘${escapeHtml(state.selectedRegion || "-")}’</span> 인물 카드 (${selectedRecs.length}명)`;
+      document.getElementById("regionDetailDesc").textContent =
+        state.selectedRegion === "분류 확인 필요"
+          ? "시·도명이 생략되어 임의로 추정하지 않고 별도 분류한 인원입니다. 카드를 누르면 프로필을 확인합니다."
+          : selectedRecs.length === 0
+            ? "해당 시·도에는 입력된 응답자가 없습니다."
+            : "세부 동·구는 공개 화면에 표시하지 않습니다. 카드를 누르면 상세 프로필로 이동합니다.";
+
+      const cardGrid = document.getElementById("regionPeopleCards");
+      cardGrid.innerHTML = "";
+      if (!selectedRecs.length) {
+        cardGrid.innerHTML = `<p class="section-sub">표시할 인물이 없습니다.</p>`;
+        return;
+      }
+      for (const rec of selectedRecs) {
+        const status = getSubmissionCategory(rec);
+        const hasUrlWarn = (rec.github && !isValidHttpUrl(rec.github)) || (rec.pages && !isValidHttpUrl(rec.pages));
+        const pillText = status === "둘 다 입력" ? (hasUrlWarn ? "URL 확인 필요" : "둘 다 입력") : status;
+        const pillWarn = status !== "둘 다 입력" || hasUrlWarn;
+
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "person-card";
+        card.innerHTML = `
+          <div>
+            <div class="person-card-top">
+              <span class="person-name">${escapeHtml(rec.name)}</span>
+              <span class="status-pill${pillWarn ? " warn" : ""}">${escapeHtml(pillText)}</span>
+            </div>
+            <p class="person-hobby">취미: ${escapeHtml(rec.hobby || "미입력")}</p>
+          </div>
+          <div class="person-foot">
+            <span>${escapeHtml(rec.regionProvince)}</span>
+            <strong>프로필 보기 ↗</strong>
+          </div>
+        `;
+        card.addEventListener("click", () => openPersonProfile(rec.name));
+        cardGrid.appendChild(card);
+      }
+    }
+
+    function renderSubmission() {
+      const order = ["둘 다 입력", "GitHub만 입력", "제출 페이지만 입력", "둘 다 미입력"];
+      const groups = new Map(order.map(k => [k, []]));
+      for (const rec of state.records) {
+        groups.get(getSubmissionCategory(rec)).push(rec.name);
+      }
+      const items = order.map(k => ({ key: k, count: groups.get(k).length }));
+      if (!order.includes(state.selectedSubmission)) state.selectedSubmission = order[0];
+
+      renderBars(
+        document.getElementById("submissionBars"),
+        items,
+        state.records.length,
+        state.selectedSubmission,
+        key => { state.selectedSubmission = key; renderSubmission(); }
+      );
+
+      const selectedNames = groups.get(state.selectedSubmission) || [];
+      document.getElementById("submissionDetailTitle").textContent = `‘${state.selectedSubmission}’ 명단 (${selectedNames.length}명)`;
+      document.getElementById("submissionDetailDesc").textContent = "이름을 누르면 해당 응답자의 프로필 탭으로 이동합니다.";
+      renderNameChips(document.getElementById("submissionDetailList"), selectedNames);
+    }
+
+    function renderHobby() {
+      const groups = new Map();
+      for (const rec of state.records) {
+        for (const h of extractHobbies(rec.hobby)) {
+          if (!groups.has(h)) groups.set(h, []);
+          groups.get(h).push(rec.name);
+        }
+      }
+
+      const query = document.getElementById("hobbySearch").value.trim().toLowerCase();
+      let items = [...groups.entries()]
+        .map(([key, names]) => ({ key, count: names.length, names }))
+        .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key, "ko"));
+
+      if (query) items = items.filter(it => it.key.toLowerCase().includes(query));
+
+      const toggleBtn = document.getElementById("hobbyTopToggle");
+      toggleBtn.textContent = state.hobbyShowAll ? "상위 10개만 보기" : `전체 보기 (${items.length}개)`;
+      toggleBtn.setAttribute("aria-pressed", String(state.hobbyShowAll));
+
+      const visibleItems = (!query && !state.hobbyShowAll) ? items.slice(0, 10) : items;
+      if (!state.selectedHobby || !groups.has(state.selectedHobby)) {
+        state.selectedHobby = visibleItems[0]?.key || items[0]?.key || null;
+      }
+
+      renderBars(
+        document.getElementById("hobbyBars"),
+        visibleItems,
+        state.records.length,
+        state.selectedHobby,
+        key => { state.selectedHobby = key; renderHobby(); }
+      );
+
+      const selectedNames = groups.get(state.selectedHobby) || [];
+      document.getElementById("hobbyDetailTitle").textContent =
+        state.selectedHobby ? `‘${state.selectedHobby}’ 입력자 (${selectedNames.length}명)` : "선택된 취미 없음";
+      document.getElementById("hobbyDetailDesc").textContent = "응답자 전체 인원 대비 해당 취미를 입력한 인원입니다.";
+      renderNameChips(document.getElementById("hobbyDetailList"), selectedNames);
+    }
+
+    function renderProfileFilters() {
+      const regionSel = document.getElementById("profileRegionFilter");
+      const prev = regionSel.value;
+      const provinces = [...new Set(state.records.map(r => r.regionProvince))].sort((a, b) => a.localeCompare(b, "ko"));
+      regionSel.innerHTML = `<option value="ALL">거주 지역: 전체</option>` +
+        provinces.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
+      if (provinces.includes(prev)) regionSel.value = prev;
+    }
+
+    function renderFieldWithOptionalUrl(rawValue) {
+      const val = String(rawValue || "").trim();
+      if (!val) return `<span class="tag">미입력</span>`;
+      if (isValidHttpUrl(val)) {
+        const safe = escapeHtml(val);
+        return `<a class="ext-link" href="${safe}" target="_blank" rel="noopener noreferrer">${safe}</a>`;
+      }
+      if (/github\.com|https?:\/\//i.test(val)) {
+        return `${escapeHtml(val)} <span class="tag tag-warn">URL 형식 확인 필요 · 링크 비활성</span>`;
+      }
+      return `${escapeHtml(val)} <span class="tag">일반 텍스트</span>`;
+    }
+
+    function renderProfile() {
+      const q = document.getElementById("profileSearch").value.trim().toLowerCase();
+      const statusF = document.getElementById("profileStatusFilter").value;
+      const regionF = document.getElementById("profileRegionFilter").value;
+
+      const indexed = state.records
+        .map((rec, idx) => ({ rec, idx }))
+        .filter(({ rec }) => {
+          if (q && !rec.name.toLowerCase().includes(q)) return false;
+          if (statusF !== "ALL" && getSubmissionCategory(rec) !== statusF) return false;
+          if (regionF !== "ALL" && rec.regionProvince !== regionF) return false;
+          return true;
+        });
+
+      const roster = document.getElementById("rosterList");
+      roster.innerHTML = "";
+      if (!indexed.length) {
+        roster.innerHTML = `<p class="box-desc">검색 조건에 맞는 이름이 없습니다.</p>`;
+      } else {
+        if (!indexed.some(item => item.idx === state.selectedProfileIndex)) {
+          state.selectedProfileIndex = indexed[0].idx;
+        }
+        for (const { rec, idx } of indexed) {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "roster-btn";
+          btn.setAttribute("aria-pressed", String(idx === state.selectedProfileIndex));
+          btn.innerHTML = `
+            <strong>${escapeHtml(rec.name)}</strong>
+            <span class="roster-sub">${escapeHtml(getSubmissionCategory(rec))} · ${escapeHtml(rec.regionProvince)}</span>
+          `;
+          btn.addEventListener("click", () => {
+            state.selectedProfileIndex = idx;
+            renderProfile();
+          });
+          roster.appendChild(btn);
+        }
+      }
+
+      const selected = state.records[state.selectedProfileIndex];
+      const nameEl = document.getElementById("profileDetailName");
+      const subEl = document.getElementById("profileDetailSub");
+      const bodyEl = document.getElementById("profileDetailBody");
+      const noticeEl = document.getElementById("profilePrivacyNotice");
+
+      if (!selected) {
+        nameEl.textContent = "프로필 상세";
+        subEl.textContent = "선택된 응답자가 없습니다.";
+        bodyEl.innerHTML = "";
+        noticeEl.textContent = "";
+        return;
+      }
+
+      nameEl.textContent = selected.name;
+      subEl.textContent = `${getSubmissionCategory(selected)} · URL 형식이 확인된 값만 링크로 열립니다.`;
+
+      const regionDisplay = state.isLocalCsv
+        ? `${escapeHtml(selected.addressRaw || "미입력")} <span class="tag">${escapeHtml(selected.regionProvince)}</span>`
+        : `${escapeHtml(selected.regionProvince)} <span class="tag">세부 동·구 공개 비노출</span>`;
+
+      const favoriteDisplay = state.isLocalCsv
+        ? (selected.favorite ? escapeHtml(selected.favorite) : `<span class="tag">미입력</span>`)
+        : `<span class="tag">공개 화면 비노출 (사적 답변)</span>`;
+
+      bodyEl.innerHTML = `
+        <dl class="profile-dl">
+          <dt>GitHub 주소</dt>
+          <dd>${renderFieldWithOptionalUrl(selected.github)}</dd>
+          <dt>제출 페이지</dt>
+          <dd>${renderFieldWithOptionalUrl(selected.pages)}</dd>
+          <dt>인스타그램</dt>
+          <dd>${renderFieldWithOptionalUrl(selected.instagram)}</dd>
+          <dt>취미</dt>
+          <dd>${selected.hobby ? escapeHtml(selected.hobby) : `<span class="tag">미입력</span>`}</dd>
+          <dt>거주지</dt>
+          <dd>${regionDisplay}</dd>
+          <dt>가장 아끼는 것</dt>
+          <dd>${favoriteDisplay}</dd>
+        </dl>
+      `;
+
+      noticeEl.textContent = state.isLocalCsv
+        ? "현재 브라우저에서 직접 연 로컬 CSV 데이터를 표시 중입니다(외부 서버 전송 없음). 공개 게시용 화면에서는 상세 주소와 사적 답변이 제외됩니다."
+        : "공개 게시 안전 모드입니다. 세부 동·구 주소와 사적 답변(‘가장 아끼는 것’ 등)은 공개 HTML 소스에 포함되지 않으며, 상단 ‘CSV 열기’로 로컬 파일을 열면 본인 화면에서만 전체 내용을 확인할 수 있습니다.";
+    }
+
+    function renderAudit() {
+      const n = state.records.length;
+      const countPresent = fn => state.records.filter(fn).length;
+
+      const rows = [
+        { label: "이름", present: countPresent(r => Boolean(r.name)), note: "필수 식별 기준" },
+        { label: "GitHub 주소", present: countPresent(r => Boolean(r.github)), note: "스킴 누락 등 형식 주의 포함" },
+        { label: "제출 페이지 주소", present: countPresent(r => Boolean(r.pages)), note: "공란 1건, 문장 포함 URL 1건" },
+        { label: "인스타그램", present: countPresent(r => Boolean(r.instagram)), note: "아이디 문자열·URL 혼재" },
+        { label: "취미", present: countPresent(r => Boolean(r.hobby)), note: "쉼표 구분 다중 입력" },
+        { label: "집주소 (동까지)", present: countPresent(r => r.regionProvince !== "미입력"), note: "시·도 미기재 2건" },
+        { label: "가장 아끼는 것", present: n, note: "공개 모드에서는 내용 비노출" },
+        { label: "성별", present: countPresent(r => r.genderPresent), note: "자유 서술 포함 · 통계 제외" }
+      ];
+
+      document.getElementById("auditTableBody").innerHTML = rows.map(r => `
+        <tr>
+          <td>${escapeHtml(r.label)}</td>
+          <td class="num">${r.present}명</td>
+          <td class="num">${n - r.present}건</td>
+          <td>${escapeHtml(r.note)}</td>
+        </tr>
+      `).join("");
+
+      document.getElementById("auditNotes").innerHTML = `
+        <p class="box-desc"><strong>1. 집계 제외 행</strong></p>
+        <ul style="margin:0 0 14px; padding-left:18px; color:var(--muted); font-size:0.88rem;">
+          <li>헤더(‘이름’) 이전 안내 행: ${state.meta.preHeaderRows}행</li>
+          <li>모든 칸이 비어 있거나 공백만 있는 행: ${state.meta.blankRows}행</li>
+          <li>이름이 누락된 데이터 행: ${state.meta.missingNameRows}행</li>
+        </ul>
+        <p class="box-desc"><strong>2. 통계화하지 않은 컬럼</strong></p>
+        <p class="box-desc" style="margin-bottom:0;">
+          ‘성별’ 컬럼에는 표준 성별 표기 외에 자유 서술·별칭 값(예: 동물, 별명 등)이 섞여 있어 일관된 분류가 불가능하므로 성별 분포 차트를 만들지 않았습니다.
+        </p>
+      `;
+    }
+
+    const tabButtons = [...document.querySelectorAll(".tab-btn")];
+    function activateTab(tabKey) {
+      state.activeTab = tabKey;
+      for (const btn of tabButtons) {
+        const active = btn.dataset.tab === tabKey;
+        btn.setAttribute("aria-selected", String(active));
+        document.getElementById(`panel-${btn.dataset.tab}`).classList.toggle("active", active);
+      }
+      // 하단 인물 카드 쇼케이스는 메인 '인물 지도' 탭일 때 노출
+      document.getElementById("lowerShowcase").hidden = (tabKey !== "map");
+    }
+
+    tabButtons.forEach((btn, idx) => {
+      btn.addEventListener("click", () => activateTab(btn.dataset.tab));
+      btn.addEventListener("keydown", e => {
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          const next = tabButtons[(idx + 1) % tabButtons.length];
+          next.focus();
+          activateTab(next.dataset.tab);
+        } else if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          const prev = tabButtons[(idx - 1 + tabButtons.length) % tabButtons.length];
+          prev.focus();
+          activateTab(prev.dataset.tab);
+        }
+      });
+    });
+
+    // 브랜드 및 우측 4타일 클릭 연동
+    document.getElementById("brandHomeBtn").addEventListener("click", () => activateTab("map"));
+    document.getElementById("tileTotal").addEventListener("click", () => activateTab("audit"));
+    document.getElementById("tileGithub").addEventListener("click", () => activateTab("submission"));
+    document.getElementById("tilePages").addEventListener("click", () => activateTab("submission"));
+    document.getElementById("tileMetro").addEventListener("click", () => {
+      state.selectedRegion = "경기도";
+      renderRegion();
+      document.getElementById("lowerShowcase").scrollIntoView({ behavior: "smooth" });
+    });
+    document.getElementById("showAllProfilesBtn").addEventListener("click", () => activateTab("profile"));
+
+    document.getElementById("hobbySearch").addEventListener("input", renderHobby);
+    document.getElementById("hobbyTopToggle").addEventListener("click", () => {
+      state.hobbyShowAll = !state.hobbyShowAll;
+      renderHobby();
+    });
+    document.getElementById("profileSearch").addEventListener("input", renderProfile);
+    document.getElementById("profileStatusFilter").addEventListener("change", renderProfile);
+    document.getElementById("profileRegionFilter").addEventListener("change", renderProfile);
+
+    const fileInput = document.getElementById("csvFileInput");
+    document.getElementById("openCsvBtn").addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", async e => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const parsed = parseUploadedCsv(text, file.name);
+        state.isLocalCsv = true;
+        state.meta = parsed.meta;
+        state.records = parsed.records;
+        state.selectedRegion = null;
+        state.selectedHobby = null;
+        state.selectedProfileIndex = 0;
+        renderAll();
+      } catch (err) {
+        alert(err.message || "CSV 파일을 읽는 중 오류가 발생했습니다.");
+      } finally {
+        fileInput.value = "";
+      }
+    });
+
+    document.getElementById("resetCsvBtn").addEventListener("click", () => {
+      state.isLocalCsv = false;
+      state.meta = PUBLIC_EMBEDDED_DATA.meta;
+      state.records = PUBLIC_EMBEDDED_DATA.records;
+      state.selectedRegion = null;
+      state.selectedHobby = null;
+      state.selectedProfileIndex = 0;
+      renderAll();
+    });
+
+    activateTab("map");
+    renderAll();
+  </script>
+</body>
+</html>
